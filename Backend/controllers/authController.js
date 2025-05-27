@@ -20,6 +20,13 @@ exports.login = async (req, res) => {
     }
 
     const user = result.recordset[0];
+    
+    // Verificar si el usuario tiene contraseña hash
+    if (!user.contrasena_hash) {
+      console.log("User has no password set");
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+
     const isValid = await bcrypt.compare(contrasena, user.contrasena_hash);
 
     if (!isValid) {
@@ -30,9 +37,10 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       { 
         id: user.id, 
-        rol: user.rol,
+        rol: user.rol || 'cliente', // Default role si no está definido
         nombre: user.nombre,
-        correo: user.correo
+        correo: user.correo,
+        fecha_registro: user.fecha_registro
       }, 
       JWT_SECRET, 
       { expiresIn: '1d' }
@@ -45,81 +53,93 @@ exports.login = async (req, res) => {
         id: user.id,
         nombre: user.nombre,
         correo: user.correo,
-        rol: user.rol
+        rol: user.rol || 'cliente',
+        fecha_registro: user.fecha_registro
       }
     });
 
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ error: 'Error en el servidor' });
+    res.status(500).json({ 
+      error: 'Error en el servidor',
+      details: process.env.NODE_ENV === 'development' ? err.message : null
+    });
   }
 };
 
 // Register Controller
 exports.register = async (req, res) => {
   const { nombre, correo, contrasena, rol } = req.body;
-  console.log("Register request:", { nombre, correo, rol });
+  
+  // Validación básica
+  if (!nombre || !correo || !contrasena) {
+    return res.status(400).json({ 
+      error: 'Campos requeridos faltantes',
+      required: ['nombre', 'correo', 'contrasena']
+    });
+  }
 
   try {
-    // Validate required fields
-    if (!nombre || !correo || !contrasena || !rol) {
-      return res.status(400).json({ error: 'Todos los campos son requeridos' });
-    }
-
     const pool = await poolPromise;
     
-    // Check if user exists
-    const userCheck = await pool.request()
+    // Verificar si el correo ya existe
+    const emailCheck = await pool.request()
       .input('correo', sql.NVarChar, correo)
-      .query('SELECT * FROM Usuarios WHERE correo = @correo');
-
-    if (userCheck.recordset.length > 0) {
+      .query('SELECT id FROM Usuarios WHERE correo = @correo');
+    
+    if (emailCheck.recordset.length > 0) {
       return res.status(400).json({ error: 'El correo ya está registrado' });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(contrasena, 10);
-
-    // Create new user
+    
+    // Crear nuevo usuario
     const result = await pool.request()
       .input('nombre', sql.NVarChar, nombre)
       .input('correo', sql.NVarChar, correo)
       .input('contrasena_hash', sql.NVarChar, hashedPassword)
-      .input('rol', sql.NVarChar, rol)
+      .input('rol', sql.NVarChar, rol || 'cliente') // Rol por defecto
       .query(`
-        INSERT INTO Usuarios (nombre, correo, contrasena_hash, rol) 
-        OUTPUT INSERTED.id, INSERTED.nombre, INSERTED.correo, INSERTED.rol
-        VALUES (@nombre, @correo, @contrasena_hash, @rol)
+        INSERT INTO Usuarios 
+        (nombre, correo, contrasena_hash, rol, fecha_registro) 
+        OUTPUT INSERTED.id, INSERTED.nombre, INSERTED.correo, INSERTED.rol, INSERTED.fecha_registro
+        VALUES (@nombre, @correo, @contrasena_hash, @rol, GETDATE())
       `);
 
     const newUser = result.recordset[0];
     
-    // Generate token for immediate login
     const token = jwt.sign(
       { 
-        id: newUser.id, 
+        id: newUser.id,
         rol: newUser.rol,
         nombre: newUser.nombre,
-        correo: newUser.correo
+        correo: newUser.correo,
+        fecha_registro: newUser.fecha_registro
       }, 
-      JWT_SECRET, 
+      JWT_SECRET,
       { expiresIn: '1d' }
     );
 
-    console.log("User registered successfully:", newUser.correo);
-    res.status(201).json({ 
+    res.status(201).json({
       message: 'Usuario registrado exitosamente',
       token,
       user: newUser
     });
 
   } catch (err) {
-    console.error("Registration error:", err);
-    res.status(500).json({ error: 'Error al registrar usuario' });
+    console.error("Registration error:", {
+      message: err.message,
+      stack: err.stack,
+      sqlError: err.originalError?.info?.message
+    });
+    
+    res.status(500).json({ 
+      error: 'Error al registrar usuario',
+      details: process.env.NODE_ENV === 'development' ? err.message : null
+    });
   }
 };
 
-// Explicit exports
 module.exports = {
   login: exports.login,
   register: exports.register

@@ -3,20 +3,35 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [correo, setCorreo] = useState('');
+  const [contrasena, setContrasena] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(''); // Resetear el error al intentar nuevamente
+    
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await api.post('/auth/login', { 
+        correo, 
+        contrasena 
+      });
+      
+      // Almacenar token y datos del usuario
       localStorage.setItem('token', res.data.token);
-      localStorage.setItem('role', res.data.role);
-      navigate('/dashboard/appointments');
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      
+      // Redirigir según el rol del usuario
+      const redirectPath = res.data.user.rol === 'admin' 
+        ? '/admin/dashboard' 
+        : '/dashboard/appointments';
+      
+      navigate(redirectPath);
+      
     } catch (err) {
-      setError('Invalid credentials');
+      console.error('Error de login:', err.response?.data);
+      setError(err.response?.data?.error || 'Credenciales inválidas');
     }
   };
 
@@ -28,7 +43,7 @@ const LoginPage = () => {
             <div className="card-body p-5">
               <h2 className="text-center mb-4 fw-bold">
                 <i className="fas fa-sign-in-alt me-2"></i>
-                Login
+                Iniciar Sesión
               </h2>
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
@@ -36,13 +51,13 @@ const LoginPage = () => {
                     <input
                       type="email"
                       className="form-control"
-                      id="email"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      id="correo"
+                      placeholder="Correo electrónico"
+                      value={correo}
+                      onChange={(e) => setCorreo(e.target.value)}
                       required
                     />
-                    <label htmlFor="email">Email</label>
+                    <label htmlFor="correo">Correo electrónico</label>
                   </div>
                 </div>
                 <div className="mb-4">
@@ -50,18 +65,18 @@ const LoginPage = () => {
                     <input
                       type="password"
                       className="form-control"
-                      id="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      id="contrasena"
+                      placeholder="Contraseña"
+                      value={contrasena}
+                      onChange={(e) => setContrasena(e.target.value)}
                       required
                     />
-                    <label htmlFor="password">Password</label>
+                    <label htmlFor="contrasena">Contraseña</label>
                   </div>
                 </div>
                 <button type="submit" className="btn btn-primary w-100 py-2 mb-4 fw-bold">
                   <i className="fas fa-sign-in-alt me-2"></i>
-                  Login
+                  Iniciar Sesión
                 </button>
                 {error && (
                   <div className="alert alert-danger text-center mb-4">
@@ -72,7 +87,7 @@ const LoginPage = () => {
                 <div className="text-center">
                   <Link to="/register" className="text-decoration-none">
                     <i className="fas fa-user-plus me-2"></i>
-                    Don't have an account? Register here
+                    ¿No tienes una cuenta? Regístrate aquí
                   </Link>
                 </div>
               </form>
