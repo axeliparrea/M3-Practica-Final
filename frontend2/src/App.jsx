@@ -3,7 +3,7 @@ import Home from './Home';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AppointmentsPage from './pages/AppointmentsPage';
-import CitasVet from './pages/Citas-Vet'; // Asegúrate de importar el componente
+import CitasVet from './pages/CitasVet'; // Asegúrate de importar el componente
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
