@@ -10,6 +10,7 @@ app.use(express.json()); // Este middleware es CRUCIAL para parsear JSON
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
 
+
 // Configurar rutas
 app.use('/auth', authRoutes);
 

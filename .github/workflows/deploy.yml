@@ -20,7 +20,7 @@ jobs:
         cache: 'npm'
         cache-dependency-path: |
           Backend/package-lock.json
-          Frontend2/package-lock.json
+          frontend2/package-lock.json
 
     - name: Install backend dependencies
       run: |
@@ -75,14 +75,28 @@ jobs:
 
     - name: Zip backend
       run: |
-        zip -r backend.zip Backend -x "Backend/node_modules/*"
+        cd Backend
+        zip -r ../backend.zip . -x "node_modules/*" ".env" "*.env" ".git/*" "*.log"
+        cd ..
+        ls -la backend.zip
+        echo "Backend zip created successfully ($(du -h backend.zip | cut -f1))"
 
     - name: Deploy to Azure Web App via zipdeploy
       run: |
+        if [ ! -f "backend.zip" ]; then
+          echo "Error: backend.zip file not found!"
+          exit 1
+        fi
+        echo "Deploying to Azure Web App: ${{ secrets.AZURE_WEBAPP_BACKEND_NAME }}"
         curl -X POST "https://${{ secrets.AZURE_WEBAPP_BACKEND_NAME }}.scm.azurewebsites.net/api/zipdeploy" \
-        -u ${{ secrets.AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE }} \
-        --data-binary @"backend.zip"
+             -u "${{ secrets.AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE }}" \
+             --data-binary @backend.zip \
+             -H "Content-Type: application/zip" \
+             --fail \
+             --show-error \
+             --silent
 
     - name: Verify deployment
       run: |
-        echo "Deployment completed. Please check your Azure Web App at: https://${{ secrets.AZURE_WEBAPP_BACKEND_NAME }}"
+        echo "Deployment completed successfully!"
+        echo "Check your Azure Web App at: https://${{ secrets.AZURE_WEBAPP_BACKEND_NAME }}.azurewebsites.net"
