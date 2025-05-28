@@ -6,6 +6,5 @@ function CitasVet() {
     );
   }
   
-  export default CitasVet;
   
-  
+export default CitasVet;
