@@ -19,32 +19,32 @@ jobs:
         node-version: '18'
         cache: 'npm'
         cache-dependency-path: |
-          server/package-lock.json
-          client/package-lock.json
+          Backend/package-lock.json
+          Frontend2/package-lock.json
 
     - name: Install backend dependencies
       run: |
-        cd server
+        cd Backend
         npm ci
 
     - name: Install frontend dependencies
       run: |
-        cd client
+        cd Frontend2
         npm ci
 
     - name: Build frontend
       run: |
-        cd client
+        cd Frontend2
         npm run build
 
     - name: Prepare backend for deployment
       run: |
-        # Copy frontend build to server public folder
-        mkdir -p server/public
-        cp -r client/build/* server/public/
+        # Copy frontend build to backend public folder
+        mkdir -p Backend/public
+        cp -r Frontend2/build/* Backend/public/
         
         # Create web.config for Azure App Service (Node.js)
-        cat > server/web.config << 'EOF'
+        cat > Backend/web.config << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
         <configuration>
           <system.webServer>
@@ -75,7 +75,7 @@ jobs:
 
     - name: Zip backend
       run: |
-        zip -r backend.zip server -x "server/node_modules/*"
+        zip -r backend.zip Backend -x "Backend/node_modules/*"
 
     - name: Deploy to Azure Web App via zipdeploy
       run: |
