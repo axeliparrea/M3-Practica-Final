@@ -18,7 +18,6 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint no encontrado' });
 });
 
-
 // Manejo de errores global
 app.use((err, req, res, next) => {
   console.error(err.stack);
