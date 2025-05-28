@@ -1,0 +1,88 @@
+name: Deploy Backend and Frontend to Azure
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: |
+          server/package-lock.json
+          client/package-lock.json
+
+    - name: Install backend dependencies
+      run: |
+        cd server
+        npm ci
+
+    - name: Install frontend dependencies
+      run: |
+        cd client
+        npm ci
+
+    - name: Build frontend
+      run: |
+        cd client
+        npm run build
+
+    - name: Prepare backend for deployment
+      run: |
+        # Copy frontend build to server public folder
+        mkdir -p server/public
+        cp -r client/build/* server/public/
+        
+        # Create web.config for Azure App Service (Node.js)
+        cat > server/web.config << 'EOF'
+        <?xml version="1.0" encoding="utf-8"?>
+        <configuration>
+          <system.webServer>
+            <handlers>
+              <add name="iisnode" path="index.js" verb="*" modules="iisnode"/>
+            </handlers>
+            <rewrite>
+              <rules>
+                <rule name="StaticContent">
+                  <action type="Rewrite" url="public{REQUEST_URI}"/>
+                </rule>
+                <rule name="DynamicContent">
+                  <conditions>
+                    <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="True"/>
+                  </conditions>
+                  <action type="Rewrite" url="index.js"/>
+                </rule>
+              </rules>
+            </rewrite>
+            <iisnode watchedFiles="web.config;*.js"/>
+          </system.webServer>
+        </configuration>
+        EOF
+
+    - name: Clean previous deployment files
+      run: |
+        rm -f backend.zip
+
+    - name: Zip backend
+      run: |
+        zip -r backend.zip server -x "server/node_modules/*"
+
+    - name: Deploy to Azure Web App via zipdeploy
+      run: |
+        curl -X POST "https://${{ secrets.AZURE_WEBAPP_BACKEND_NAME }}.scm.azurewebsites.net/api/zipdeploy" \
+        -u ${{ secrets.AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE }} \
+        --data-binary @"backend.zip"
+
+    - name: Verify deployment
+      run: |
+        echo "Deployment completed. Please check your Azure Web App at: https://${{ secrets.AZURE_WEBAPP_BACKEND_NAME }}"
