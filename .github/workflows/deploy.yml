@@ -80,9 +80,12 @@ jobs:
 
     - name: Deploy to Azure Web App via zipdeploy
       run: |
-        curl -X POST "https://${{ secrets.AZURE_WEBAPP_BACKEND_NAME }}.scm.azurewebsites.net/api/zipdeploy" \
-        -u ${{ secrets.AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE }} \
-        --data-binary @"backend.zip"
+        curl -X POST "https://sapitos.scm.azurewebsites.net/api/zipdeploy" \
+          -u '$Sapitos:S7kvBs0G52Ym8QwWykrk0q3xEdnXnhuvoWhw8LSeeszvGZdyBmnEKGTp4NWB' \
+          --data-binary @"backend.zip" \
+          -H "Content-Type: application/zip" \
+          --fail --show-error
+
 
 
     - name: Verify deployment
