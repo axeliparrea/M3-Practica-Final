@@ -41,7 +41,7 @@ jobs:
       run: |
         # Copy frontend build to backend public folder
         mkdir -p Backend/public
-        cp -r frontend2/build/* Backend/public/
+        cp -r frontend2/dist/* Backend/public/
         
         # Create web.config for Azure App Service (Node.js)
         cat > Backend/web.config << 'EOF'
