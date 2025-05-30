@@ -37,7 +37,8 @@ jobs:
       run: |
         cd frontend2
         echo "Running ESLint checks on frontend..."
-        npx eslint . --ext .js,.jsx --max-warnings 0 || {
+        npm install eslint@8.56.0 --save-dev
+        npx eslint . --ext .js,.jsx --config eslint.config.js --max-warnings 0 || {
           echo "❌ ESLint found issues in frontend code"
           exit 1
         }
@@ -47,7 +48,8 @@ jobs:
       run: |
         cd Backend
         echo "Running ESLint checks on backend..."
-        npx eslint . --ext .js --max-warnings 0 || {
+        npm install eslint@8.56.0 --save-dev
+        npx eslint . --ext .js --config eslint.config.js --max-warnings 0 || {
           echo "❌ ESLint found issues in backend code"
           exit 1
         }
