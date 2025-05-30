@@ -82,33 +82,25 @@ jobs:
     - name: Deploy to Azure Web App via zipdeploy
       shell: bash
       env:
-        AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE }}
+        AZURE_USERNAME: ${{ secrets.AZURE_WEBAPP_USERNAME }}
+        AZURE_PASSWORD: ${{ secrets.AZURE_WEBAPP_PASSWORD }}
+        AZURE_APP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
       run: |
-        # Verificar que el secreto existe
-        if [ -z "$AZURE_WEBAPP_PUBLISH_PROFILE" ]; then
-          echo "Error: Missing AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE secret" >&2
+        # Verificar que los secretos existen
+        if [ -z "$AZURE_USERNAME" ] || [ -z "$AZURE_PASSWORD" ] || [ -z "$AZURE_APP_NAME" ]; then
+          echo "Error: Missing required secrets" >&2
+          echo "Please ensure AZURE_WEBAPP_USERNAME, AZURE_WEBAPP_PASSWORD, and AZURE_WEBAPP_NAME are set"
           exit 1
         fi
         
-        # Extraer credenciales del perfil de Zip Deploy específicamente
-        USER=$(echo "$AZURE_WEBAPP_PUBLISH_PROFILE" | grep 'publishMethod="ZipDeploy"' | sed -n 's/.*userName="\([^"]*\)".*/\1/p')
-        PASS=$(echo "$AZURE_WEBAPP_PUBLISH_PROFILE" | grep 'publishMethod="ZipDeploy"' | sed -n 's/.*userPWD="\([^"]*\)".*/\1/p')
-        
-        # Verificar que se obtuvieron las credenciales
-        if [ -z "$USER" ] || [ -z "$PASS" ]; then
-          echo "Error: Could not extract deployment credentials from publish profile" >&2
-          echo "USER: '$USER'"
-          echo "PASS length: ${#PASS}"
-          exit 1
-        fi
-        
-        echo "Using credentials for user: $USER"
+        echo "Deploying to app: $AZURE_APP_NAME"
+        echo "Using username: $AZURE_USERNAME"
         
         # Realizar el despliegue
         echo "Starting deployment..."
-        curl -X POST "https://sapitos.scm.azurewebsites.net/api/zipdeploy" \
+        curl -X POST "https://${AZURE_APP_NAME}.scm.azurewebsites.net/api/zipdeploy" \
           --fail \
-          --user "$USER:$PASS" \
+          --user "$AZURE_USERNAME:$AZURE_PASSWORD" \
           --data-binary "@backend.zip" \
           --header "Content-Type: application/zip" \
           --max-time 600 \
