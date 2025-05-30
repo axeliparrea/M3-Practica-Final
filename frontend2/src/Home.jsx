@@ -5,7 +5,7 @@ const Home = () => {
   return (
     <div className="container mt-4">
       <h1>Welcome to VetCare Pro</h1>
-      <p>Your pet's health management system</p>
+      <p>Your pet&apos;s health management system</p>
     </div>
   );
 };
