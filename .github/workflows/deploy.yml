@@ -77,22 +77,36 @@ jobs:
     - name: Zip backend
       run: |
         cd Backend
-        zip -r ../backend.zip . -x "node_modules/*" ".env" "*.git*" ".env.*"
-
-    - name: Deploy to Azure Web App via zipdeploy
+        zip -r ../backend.zip . -x "node_modules/*" ".env" "*.git*" ".env.*"    - name: Deploy to Azure Web App via zipdeploy
+      shell: bash
       env:
         AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE }}
       run: |
+        # Verificar que el secreto existe
         if [ -z "$AZURE_WEBAPP_PUBLISH_PROFILE" ]; then
-          echo "Missing AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE secret" && exit 1
+          echo "Error: Missing AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE secret" >&2
+          exit 1
         fi
-        USER=$(echo "$AZURE_WEBAPP_PUBLISH_PROFILE" | grep -oP 'userName=\K[^;]*')
-        PASS=$(echo "$AZURE_WEBAPP_PUBLISH_PROFILE" | grep -oP 'userPWD=\K[^;]*')
+        
+        # Extraer credenciales del perfil de publicación
+        USER=$(echo "$AZURE_WEBAPP_PUBLISH_PROFILE" | grep -oP '(?<=userName=)[^;]+')
+        PASS=$(echo "$AZURE_WEBAPP_PUBLISH_PROFILE" | grep -oP '(?<=userPWD=)[^;]+')
+        
+        # Verificar que se obtuvieron las credenciales
+        if [ -z "$USER" ] || [ -z "$PASS" ]; then
+          echo "Error: Could not extract deployment credentials from publish profile" >&2
+          exit 1
+        fi
+        
+        # Realizar el despliegue
+        echo "Starting deployment..."
         curl -X POST "https://sapitos.scm.azurewebsites.net/api/zipdeploy" \
+          --fail \
           --user "$USER:$PASS" \
           --data-binary "@backend.zip" \
           --header "Content-Type: application/zip" \
-          --max-time 600
+          --max-time 600 \
+          || { echo "Error: Deployment failed" >&2; exit 1; }
 
     - name: Verify deployment
       run: |
