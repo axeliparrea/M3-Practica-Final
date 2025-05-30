@@ -7,7 +7,6 @@ import CitasVet from './pages/CitasVet'; // Asegúrate de importar el componente
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
-
 function App() {
   return (
     <Router>
