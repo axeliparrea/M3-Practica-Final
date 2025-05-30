@@ -80,10 +80,10 @@ jobs:
 
     - name: Deploy to Azure Web App via zipdeploy
       env:
-        AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE }}
       run: |
         if [ -z "$AZURE_WEBAPP_PUBLISH_PROFILE" ]; then
-          echo "Missing AZURE_WEBAPP_PUBLISH_PROFILE secret" && exit 1
+          echo "Missing AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE secret" && exit 1
         fi
         USER=$(echo "$AZURE_WEBAPP_PUBLISH_PROFILE" | grep -oP 'userName=\K[^;]*')
         PASS=$(echo "$AZURE_WEBAPP_PUBLISH_PROFILE" | grep -oP 'userPWD=\K[^;]*')
