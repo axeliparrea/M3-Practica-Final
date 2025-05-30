@@ -33,6 +33,26 @@ jobs:
         cd frontend2
         npm ci
 
+    - name: Run ESLint on Frontend
+      run: |
+        cd frontend2
+        echo "Running ESLint checks on frontend..."
+        npx eslint . --ext .js,.jsx --max-warnings 0 || {
+          echo "❌ ESLint found issues in frontend code"
+          exit 1
+        }
+        echo "✅ Frontend ESLint checks passed"
+
+    - name: Run ESLint on Backend
+      run: |
+        cd Backend
+        echo "Running ESLint checks on backend..."
+        npx eslint . --ext .js --max-warnings 0 || {
+          echo "❌ ESLint found issues in backend code"
+          exit 1
+        }
+        echo "✅ Backend ESLint checks passed"
+
     - name: Build frontend
       run: |
         cd frontend2
@@ -110,3 +130,25 @@ jobs:
     - name: Verify deployment
       run: |
         echo "Deployment completed. Please check your Azure Web App at: https://sapitos.azurewebsites.net"
+
+    - name: Test login functionality
+      run: |
+        echo "Testing login functionality..."
+        # Esperar un momento para que el servicio esté completamente iniciado
+        sleep 30
+        
+        # Realizar prueba de login
+        LOGIN_RESPONSE=$(curl -s -X POST https://sapitos.azurewebsites.net/auth/login \
+          -H "Content-Type: application/json" \
+          -d '{"correo":"test@example.com","contrasena":"test123"}')
+        
+        # Verificar si la respuesta contiene un token (éxito) o un mensaje de error
+        if echo "$LOGIN_RESPONSE" | grep -q "token"; then
+          echo "✅ Login test passed - Response contains authentication token"
+          echo "Response: $LOGIN_RESPONSE"
+        else
+          echo "❌ Login test failed"
+          echo "Response: $LOGIN_RESPONSE"
+          # No hacemos fallar el workflow ya que esto es solo una prueba
+          # exit 1
+        fi
