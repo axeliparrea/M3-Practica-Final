@@ -79,15 +79,19 @@ jobs:
         zip -r ../backend.zip . -x "node_modules/*" ".env" "*.git*" ".env.*"
 
     - name: Deploy to Azure Web App via zipdeploy
+      env:
+        AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
       run: |
+        if [ -z "$AZURE_WEBAPP_PUBLISH_PROFILE" ]; then
+          echo "Missing AZURE_WEBAPP_PUBLISH_PROFILE secret" && exit 1
+        fi
+        USER=$(echo "$AZURE_WEBAPP_PUBLISH_PROFILE" | grep -oP 'userName=\K[^;]*')
+        PASS=$(echo "$AZURE_WEBAPP_PUBLISH_PROFILE" | grep -oP 'userPWD=\K[^;]*')
         curl -X POST "https://sapitos.scm.azurewebsites.net/api/zipdeploy" \
-          -u '$Sapitos:S7kvBs0G52Ym8QwWykrk0q3xEdnXnhuvoWhw8LSeeszvGZdyBmnEKGTp4NWB' \
-          --data-binary @"backend.zip" \
-          -H "Content-Type: application/zip" \
-          --fail --show-error
-
-
-
+          --user "$USER:$PASS" \
+          --data-binary "@backend.zip" \
+          --header "Content-Type: application/zip" \
+          --max-time 600
 
     - name: Verify deployment
       run: |

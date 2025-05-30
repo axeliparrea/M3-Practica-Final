@@ -8,6 +8,7 @@ exports.login = async (req, res) => {
   const { correo, contrasena } = req.body;
   console.log("Login request:", correo);
 
+  
   try {
     const pool = await poolPromise;
     const result = await pool.request()
