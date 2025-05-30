@@ -8,6 +8,4 @@ function CitasVet() {
     );
   }
   
-
-  
 export default CitasVet;
