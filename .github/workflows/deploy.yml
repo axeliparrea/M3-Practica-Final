@@ -68,11 +68,11 @@ jobs:
             <iisnode watchedFiles="web.config;*.js"/>
           </system.webServer>
         </configuration>
-        EOF
-
-    - name: Clean previous deployment files
+        EOF    - name: Clean previous deployment files
       run: |
-        rm -f backend.zip    - name: Zip backend
+        rm -f backend.zip
+        
+    - name: Zip backend
       run: |
         cd Backend
         zip -r ../backend.zip . -x "node_modules/*" ".env" "*.git*" ".env.*"
