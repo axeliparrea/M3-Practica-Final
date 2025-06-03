@@ -5,10 +5,12 @@ const js = require('@eslint/js');
 const globals = require('globals');
 
 module.exports = {
-  env: {
-    browser: true,
-    es2021: true,
-    node: true,
+  languageOptions: {
+    globals: {
+      ...globals.browser,
+      ...globals.es2021,
+      ...globals.node,
+    },
   },
   extends: [
     'eslint:recommended',
@@ -31,14 +33,6 @@ module.exports = {
     react: {
       version: 'detect',
     },
-  },
-  globals: {
-    process: 'readonly',
-    __REACT_DEVTOOLS_GLOBAL_HOOK__: 'readonly',
-    Buffer: 'readonly',
-    setImmediate: 'readonly',
-    WorkerGlobalScope: 'readonly',
-    global: 'readonly',
   },
   rules: {
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
