@@ -31,9 +31,7 @@ jobs:
     - name: Install frontend dependencies
       run: |
         cd frontend2
-        npm ci
-
-    - name: Run ESLint on Frontend
+        npm ci    - name: Run ESLint on Frontend
       run: |
         cd frontend2
         echo "Running ESLint checks on frontend..."
@@ -42,7 +40,9 @@ jobs:
           echo "❌ ESLint found issues in frontend code"
           exit 1
         }
-        echo "✅ Frontend ESLint checks passed"    - name: Run ESLint on Backend
+        echo "✅ Frontend ESLint checks passed"
+
+    - name: Run ESLint on Backend
       run: |
         cd Backend
         echo "Running ESLint checks on backend..."
