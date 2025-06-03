@@ -42,14 +42,12 @@ jobs:
           echo "❌ ESLint found issues in frontend code"
           exit 1
         }
-        echo "✅ Frontend ESLint checks passed"
-
-    - name: Run ESLint on Backend
+        echo "✅ Frontend ESLint checks passed"    - name: Run ESLint on Backend
       run: |
         cd Backend
         echo "Running ESLint checks on backend..."
-        npm install eslint@8.56.0 --save-dev
-        npx eslint . --ext .js --config eslint.config.js --max-warnings 0 || {
+        npm install eslint@latest --save-dev
+        npx eslint . --config eslint.config.js --max-warnings 0 || {
           echo "❌ ESLint found issues in backend code"
           exit 1
         }
