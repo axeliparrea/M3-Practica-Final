@@ -37,8 +37,8 @@ jobs:
       run: |
         cd frontend2
         echo "Running ESLint checks on frontend..."
-        npm install eslint@8.56.0 --save-dev
-        npx eslint . --config eslint.config.js --max-warnings 0 || {
+        npm install eslint@latest --save-dev
+        npx eslint . --config eslint.config.cjs --max-warnings 0 || {
           echo "❌ ESLint found issues in frontend code"
           exit 1
         }
