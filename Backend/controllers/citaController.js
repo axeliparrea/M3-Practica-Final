@@ -25,7 +25,6 @@ exports.getCitas = async (req, res) => {
 };
 
 
-
 // Crear cita
 exports.crearCita = async (req, res) => {
   const { fecha, motivo, mascota_id } = req.body;
