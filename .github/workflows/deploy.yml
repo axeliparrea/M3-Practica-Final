@@ -21,7 +21,7 @@ jobs:
         cache: 'npm'
         cache-dependency-path: |
           Backend/package-lock.json
-          Frontend2/package-lock.json
+          frontend2/package-lock.json
 
     - name: Install backend dependencies
       run: |
@@ -37,7 +37,7 @@ jobs:
       run: |
         cd frontend2
         echo "Running ESLint checks on frontend..."
-        npm install eslint@latest --save-dev
+        npm install eslint@8.57.0 --save-dev
         npx eslint . --config eslint.config.cjs --max-warnings 0 || {
           echo "❌ ESLint found issues in frontend code"
           exit 1
@@ -48,12 +48,9 @@ jobs:
       run: |
         cd Backend
         echo "Running ESLint checks on backend..."
-        npm install eslint@latest --save-dev
+        npm install eslint@8.57.0 --save-dev
         npx eslint . --config eslint.config.js --max-warnings 0 || {
           echo "❌ ESLint found issues in backend code"
-          exit 1
-        }
-        echo "✅ Backend ESLint checks passed"
           exit 1
         }
         echo "✅ Backend ESLint checks passed"
@@ -90,10 +87,16 @@ jobs:
                 </rule>
               </rules>
             </rewrite>
-            <iisnode watchedFiles="web.config;*.js"/>
+            <iisnode watchedFiles="web.config;*.js" loggingEnabled="true"/>
           </system.webServer>
         </configuration>
         EOF
+
+        # Create a health check endpoint
+        echo "// Health check endpoint for Azure monitoring
+        app.get('/health', (req, res) => {
+          res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+        });" >> Backend/index.js
 
     - name: Clean previous deployment files
       run: |
@@ -102,35 +105,14 @@ jobs:
     - name: Zip backend
       run: |
         cd Backend
-        zip -r ../backend.zip . -x "node_modules/*" ".env" "*.git*" ".env.*"
+        zip -r ../backend.zip . -x "node_modules/*" ".env" "*.git*" ".env.*" "tests/*"
         
     - name: Deploy to Azure Web App via zipdeploy
-      shell: bash
-      env:
-        AZURE_USERNAME: ${{ secrets.AZURE_WEBAPP_USERNAME }}
-        AZURE_PASSWORD: ${{ secrets.AZURE_WEBAPP_PASSWORD }}
-        AZURE_APP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
-      run: |
-        # Verificar que los secretos existen
-        if [ -z "$AZURE_USERNAME" ] || [ -z "$AZURE_PASSWORD" ] || [ -z "$AZURE_APP_NAME" ]; then
-          echo "Error: Missing required secrets" >&2
-          echo "Please ensure AZURE_WEBAPP_USERNAME, AZURE_WEBAPP_PASSWORD, and AZURE_WEBAPP_NAME are set"
-          exit 1
-        fi
-        
-        echo "Deploying to app: $AZURE_APP_NAME"
-        echo "Using username: $AZURE_USERNAME"
-        
-        # Realizar el despliegue
-        echo "Starting deployment..."
-        curl -X POST "https://${AZURE_APP_NAME}.scm.azurewebsites.net/api/zipdeploy" \
-          --fail \
-          --user "$AZURE_USERNAME:$AZURE_PASSWORD" \
-          --data-binary "@backend.zip" \
-          --header "Content-Type: application/zip" \
-          --max-time 600 \
-          -v \
-          || { echo "Error: Deployment failed" >&2; exit 1; }
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: backend.zip
 
     - name: Verify deployment
       run: |
@@ -140,7 +122,7 @@ jobs:
       run: |
         echo "Testing login functionality..."
         # Esperar un momento para que el servicio esté completamente iniciado
-        sleep 30
+        sleep 60
         
         # Realizar prueba de login
         LOGIN_RESPONSE=$(curl -s -X POST https://sapitos.azurewebsites.net/auth/login \
@@ -155,5 +137,4 @@ jobs:
           echo "❌ Login test failed"
           echo "Response: $LOGIN_RESPONSE"
           # No hacemos fallar el workflow ya que esto es solo una prueba
-          # exit 1
         fi
