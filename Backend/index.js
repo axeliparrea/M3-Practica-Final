@@ -18,12 +18,13 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint no encontrado' });
 });
 
-// Manejo de errores global
-app.use((err, req, res, next) => {
+// Middleware de manejo de errores global
+app.use((err, req, res, _next) => { // Renombrar next a _next para indicar que no se usa
   console.error(err.stack);
   res.status(500).json({ error: 'Error interno del servidor' });
 });
 
-
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
+
+module.exports = app; // Asegúrate de exportar app para las pruebas

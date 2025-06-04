@@ -2,6 +2,7 @@ const js = require('@eslint/js');
 const globals = require('globals');
 
 module.exports = [
+  js.configs.recommended, // Utilizar la configuración recomendada de ESLint
   {
     ignores: ['dist'],
     files: ['**/*.js'],
@@ -9,7 +10,8 @@ module.exports = [
       ecmaVersion: 2020,
       globals: {
         ...globals.node,
-        ...globals.commonjs
+        ...globals.commonjs,
+        ...globals.jest // Agregar globales de Jest
       },
       sourceType: 'module',
     },
