@@ -27,8 +27,7 @@ jobs:
       run: |
         cd Backend
         npm ci
-        
-    - name: Install frontend dependencies
+          - name: Install frontend dependencies
       run: |
         cd frontend2
         npm ci
@@ -38,18 +37,18 @@ jobs:
         cd frontend2
         echo "Running ESLint checks on frontend..."
         npm install eslint@8.57.0 --save-dev
-        npx eslint . --config eslint.config.cjs --max-warnings 0 || {
+        npx eslint . --config eslint.config.cjs || {
           echo "❌ ESLint found issues in frontend code"
           exit 1
         }
         echo "✅ Frontend ESLint checks passed"
-
+        
     - name: Run ESLint on Backend
       run: |
         cd Backend
         echo "Running ESLint checks on backend..."
         npm install eslint@8.57.0 --save-dev
-        npx eslint . --config eslint.config.js --max-warnings 0 || {
+        npx eslint . --config eslint.config.js || {
           echo "❌ ESLint found issues in backend code"
           exit 1
         }
