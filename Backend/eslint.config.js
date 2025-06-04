@@ -19,7 +19,7 @@ module.exports = [
       reportUnusedDisableDirectives: true,
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }], // Modificada esta línea
       'no-undef': 'error',
       'no-console': 'warn',
       'no-debugger': 'error',
