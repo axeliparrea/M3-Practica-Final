@@ -14,7 +14,6 @@ exports.getMascotasPorUsuario = async (req, res) => {
       `);
     res.json(result.recordset);
   } catch (err) {
-    console.error(err);
     res.status(500).send('Error al obtener mascotas');
   }
 };

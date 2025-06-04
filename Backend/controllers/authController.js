@@ -6,8 +6,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
 // Login Controller
 exports.login = async (req, res) => {
   const { correo, contrasena } = req.body;
-  console.log("Login request:", correo);
-
   
   try {
     const pool = await poolPromise;
@@ -16,7 +14,6 @@ exports.login = async (req, res) => {
       .query('SELECT * FROM Usuarios WHERE correo = @correo');
 
     if (result.recordset.length === 0) {
-      console.log("User not found");
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
@@ -24,14 +21,12 @@ exports.login = async (req, res) => {
     
     // Verificar si el usuario tiene contraseña hash
     if (!user.contrasena_hash) {
-      console.log("User has no password set");
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
     const isValid = await bcrypt.compare(contrasena, user.contrasena_hash);
 
     if (!isValid) {
-      console.log("Invalid password");
       return res.status(401).json({ error: 'Contraseña incorrecta' });
     }
 
@@ -47,7 +42,6 @@ exports.login = async (req, res) => {
       { expiresIn: '1d' }
     );
 
-    console.log("Login successful for user:", user.correo);
     res.json({ 
       token, 
       user: {

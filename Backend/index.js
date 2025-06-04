@@ -9,9 +9,13 @@ app.use(express.json()); // Este middleware es CRUCIAL para parsear JSON
 
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
+const mascotaRoutes = require('./routes/mascotaRoutes');
+const citaRoutes = require('./routes/citaRoutes');
 
 // Configurar rutas
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/mascotas', mascotaRoutes);
+app.use('/api/citas', citaRoutes);
 
 // Manejo de errores 404
 app.use((req, res) => {
@@ -25,6 +29,6 @@ app.use((err, req, res, _next) => { // Renombrar next a _next para indicar que n
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
+app.listen(PORT);
 
 module.exports = app; // Asegúrate de exportar app para las pruebas

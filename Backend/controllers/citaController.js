@@ -20,7 +20,6 @@ exports.getCitas = async (req, res) => {
     const result = await pool.request().query(query);
     res.json(result.recordset);
   } catch (err) { // Mantener err para posible logging futuro
-    console.error('Error al obtener citas:', err); // Opcional: loguear el error
     res.status(500).send('Error al obtener citas');
   }
 };
