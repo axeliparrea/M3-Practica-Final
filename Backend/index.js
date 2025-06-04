@@ -24,7 +24,6 @@ app.use((req, res) => {
 
 // Middleware de manejo de errores global
 app.use((err, req, res, _next) => { // Renombrar next a _next para indicar que no se usa
-  console.error(err.stack);
   res.status(500).json({ error: 'Error interno del servidor' });
 });
 
