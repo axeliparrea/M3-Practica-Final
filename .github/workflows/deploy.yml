@@ -54,9 +54,6 @@ jobs:
           exit 1
         }
         echo "✅ Backend ESLint checks passed"
-          exit 1
-        }
-        echo "✅ Backend ESLint checks passed"
 
     - name: Build frontend
       run: |
