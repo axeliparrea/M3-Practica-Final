@@ -54,7 +54,6 @@ exports.login = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("Login error:", err);
     res.status(500).json({ 
       error: 'Error en el servidor',
       details: process.env.NODE_ENV === 'development' ? err.message : null
@@ -122,12 +121,6 @@ exports.register = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("Registration error:", {
-      message: err.message,
-      stack: err.stack,
-      sqlError: err.originalError?.info?.message
-    });
-    
     res.status(500).json({ 
       error: 'Error al registrar usuario',
       details: process.env.NODE_ENV === 'development' ? err.message : null

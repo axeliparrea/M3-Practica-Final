@@ -12,8 +12,7 @@ const poolPromise = new sql.ConnectionPool(dbConfig)
   .connect()
   .then(pool => {
     return pool;
-  })
-  .catch(err => {
+  }).catch(_err => {
     process.exit(1);
   });
 

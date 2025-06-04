@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
+
 const RegisterPage = () => {
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');

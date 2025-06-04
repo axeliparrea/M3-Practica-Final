@@ -5,7 +5,7 @@ const app = express();
 
 // Configuración de middleware esencial
 app.use(cors());
-app.use(express.json()); // Este middleware es CRUCIAL para parsear JSON
+app.use(express.json());
 
 // Importar rutas
 const authRoutes = require('./routes/authRoutes');
