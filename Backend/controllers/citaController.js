@@ -1,5 +1,6 @@
 const { poolPromise, sql } = require('../config/db');
 
+
 // Obtener citas por rol
 exports.getCitas = async (req, res) => {
   const { id, rol } = req.user;
